@@ -1,0 +1,15 @@
+        .tooltip {
+            visibility: hidden;
+            opacity: 0;
+            transition: all 0.3s;
+        }
+
+        .tooltip.show {
+            visibility: visible;
+            opacity: 1;
+        }
+
+        .day-cell:hover .tooltip {
+            visibility: visible;
+            opacity: 1;
+        }
