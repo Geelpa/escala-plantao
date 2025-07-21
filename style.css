@@ -1,15 +1,23 @@
-        .tooltip {
-            visibility: hidden;
-            opacity: 0;
-            transition: all 0.3s;
-        }
+.tooltip {
+    visibility: hidden;
+    opacity: 0;
+    transition: all 0.3s;
+}
 
-        .tooltip.show {
-            visibility: visible;
-            opacity: 1;
-        }
+.tooltip.show {
+    visibility: visible;
+    opacity: 1;
+}
 
-        .day-cell:hover .tooltip {
-            visibility: visible;
-            opacity: 1;
-        }
+.day-cell:hover .tooltip {
+    visibility: visible;
+    opacity: 1;
+}
+
+body {
+    font-family: system-ui, sans-serif;
+}
+
+#modal input[type="color"] {
+    height: 2rem;
+}
