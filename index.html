@@ -251,18 +251,33 @@
             async loadMonthSchedules(year, month) {
                 try {
                     await this.updateConnectionStatus('connecting', 'Carregando...');
-                    const monthKey = `${year}-${month.toString().padStart(2, '0')}`;
 
-                    // Para demonstração, vamos simular alguns dados
-                    const sampleData = new Map();
-                    const today = new Date();
+                    const start = new Date(year, month - 1, 1);
+                    const end = new Date(year, month, 0); // último dia do mês
 
-                    sampleData.forEach((employees, dateKey) => {
-                        schedules.set(dateKey, employees);
+                    const startKey = utils.formatDateKey(start);
+                    const endKey = utils.formatDateKey(end);
+
+                    const q = query(
+                        collection(db, 'schedules'),
+                        where('date', '>=', startKey),
+                        where('date', '<=', endKey),
+                        orderBy('date')
+                    );
+
+                    const querySnapshot = await getDocs(q);
+                    const dataMap = new Map();
+
+                    querySnapshot.forEach(docSnap => {
+                        const data = docSnap.data();
+                        if (data.date && data.employees) {
+                            dataMap.set(data.date, data.employees);
+                            schedules.set(data.date, data.employees); // atualiza memória local
+                        }
                     });
 
                     await this.updateConnectionStatus('connected', 'Dados carregados');
-                    return sampleData;
+                    return dataMap;
                 } catch (error) {
                     console.error('Erro ao carregar escalas do mês:', error);
                     await this.updateConnectionStatus('error', 'Erro ao carregar');
@@ -423,6 +438,7 @@
 
             updateUpcomingSchedules() {
                 const today = new Date();
+                today.setHours(0, 0, 0, 0);
                 const upcoming = [];
 
                 schedules.forEach((employees, dateKey) => {
