@@ -1,88 +1,36 @@
 <!DOCTYPE html>
-<html lang="pt-BR">
+<html lang="en">
 
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Sistema de Escalas</title>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Shift Scheduler</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body>
-    <div class="container">
-        <div class="header">
-            <h1>📅 Sistema de Escalas</h1>
-            <div class="month-navigation">
-                <button class="nav-btn" onclick="previousMonth()">← Anterior</button>
-                <div class="current-month">
-                    <div id="currentMonthYear"></div>
-                    <div class="current-indicator" id="monthIndicator"></div>
-                </div>
-                <button class="nav-btn" onclick="nextMonth()">Próximo →</button>
-            </div>
-        </div>
+<body class="bg-gray-100 text-gray-900">
+    <div class="container mx-auto p-4">
+        <h1 class="text-2xl font-bold mb-4">Shift Calendar</h1>
+        <div id="calendar" class="grid grid-cols-7 gap-2 mb-8"></div>
 
-        <div class="main-content">
-            <div class="calendar-section">
-                <table class="calendar" id="calendar">
-                    <thead>
-                        <tr>
-                            <th>Dom</th>
-                            <th>Seg</th>
-                            <th>Ter</th>
-                            <th>Qua</th>
-                            <th>Qui</th>
-                            <th>Sex</th>
-                            <th>Sáb</th>
-                        </tr>
-                    </thead>
-                    <tbody id="calendarBody">
-                    </tbody>
-                </table>
-            </div>
-
-            <div class="sidebar">
-                <h3>➕ Adicionar Funcionário</h3>
-                <div class="add-employee-form">
-                    <div class="form-group">
-                        <label for="employeeName">Nome do Funcionário:</label>
-                        <input type="text" id="employeeName" placeholder="Digite o nome">
-                    </div>
-                    <div class="form-group">
-                        <label for="selectedDate">Data Selecionada:</label>
-                        <input type="date" id="selectedDate">
-                    </div>
-                    <button class="btn" onclick="addEmployee()">Adicionar à Escala</button>
-                </div>
-
-                <h3>📋 Próximas Escalas</h3>
-                <div class="upcoming-schedules">
-                    <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 15px;">
-                        <span>Status:</span>
-                        <span id="loadingIndicator" style="font-weight: bold;">Conectando...</span>
-                    </div>
-                    <div id="upcomingSchedules">
-                        <p>Carregando escalas...</p>
-                    </div>
-                </div>
-            </div>
+        <!-- Upcoming Schedules -->
+        <div id="upcomingSchedulesContainer" class="bg-white p-4 rounded shadow">
+            <h2 class="text-xl font-semibold mb-2">Upcoming Schedules</h2>
+            <ul id="upcomingSchedulesList" class="list-disc pl-5 text-sm text-gray-700"></ul>
         </div>
     </div>
 
-    <!-- Modal para editar dia -->
-    <div id="editModal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h3 id="modalTitle">Editar Escala</h3>
-                <span class="close" onclick="closeModal()">&times;</span>
-            </div>
-            <div id="modalContent">
-                <div class="form-group">
-                    <label for="newEmployeeName">Adicionar Funcionário:</label>
-                    <input type="text" id="newEmployeeName" placeholder="Nome do funcionário">
-                    <button class="btn" onclick="addEmployeeToDay()" style="margin-top: 10px;">Adicionar</button>
-                </div>
-                <div id="currentEmployees"></div>
+    <!-- Modal -->
+    <div id="employeeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center">
+        <div class="bg-white p-4 rounded w-80">
+            <h3 id="modalDate" class="text-lg font-bold mb-2"></h3>
+            <ul id="employeeList" class="mb-4 text-sm text-gray-700"></ul>
+            <input type="text" id="employeeInput" class="border w-full p-2 mb-2" placeholder="Add employee name" />
+            <div class="flex justify-end gap-2">
+                <button id="closeModal" class="bg-gray-300 px-4 py-2 rounded">Close</button>
+                <button id="addEmployee" class="bg-orange-500 text-white px-4 py-2 rounded">Add</button>
             </div>
         </div>
     </div>

@@ -13,356 +13,170 @@ import {
     orderBy
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-// Variáveis globais
-let currentDate = new Date();
-let schedules = {};
-let editingDate = null;
-let unsubscribe = null;
+const schedulesCollection = collection(db, "schedules");
+const scheduleData = {};
+const calendarElement = document.getElementById("calendar");
 
-const months = [
-    'Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho',
-    'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'
-];
+let currentMonth = new Date().getMonth();
+let currentYear = new Date().getFullYear();
 
-// ========================================
-// FUNÇÕES DO FIREBASE/FIRESTORE (CRUD)
-// ========================================
+// --- Calendar Functions ---
+function renderCalendar(month = currentMonth, year = currentYear) {
+    calendarElement.innerHTML = "";
+    const firstDay = new Date(year, month, 1).getDay();
+    const daysInMonth = new Date(year, month + 1, 0).getDate();
 
-// READ - Carregar escalas do Firestore
-async function loadSchedulesFromFirestore() {
-    try {
-        showLoading(true);
-        const schedulesRef = collection(db, 'schedules');
-        const q = query(schedulesRef, orderBy('date'));
-
-        // Listener em tempo real para sincronização
-        unsubscribe = onSnapshot(q, (querySnapshot) => {
-            schedules = {};
-            querySnapshot.forEach((doc) => {
-                const data = doc.data();
-                schedules[data.date] = data.employees || [];
-            });
-            updateCalendar();
-            showLoading(false);
-        });
-    } catch (error) {
-        console.error('Erro ao carregar escalas:', error);
-        showLoading(false);
-        alert('Erro ao carregar dados. Verifique sua conexão com o Firebase.');
+    for (let i = 0; i < firstDay; i++) {
+        const emptyCell = document.createElement("div");
+        calendarElement.appendChild(emptyCell);
     }
-}
 
-// CREATE/UPDATE - Salvar escala no Firestore
-async function saveScheduleToFirestore(dateKey, employees) {
-    try {
-        const scheduleRef = doc(db, 'schedules', dateKey);
+    for (let day = 1; day <= daysInMonth; day++) {
+        const dateKey = formatDateKey(new Date(year, month, day));
+        const dayCell = document.createElement("div");
+        dayCell.className = "bg-white p-2 border rounded text-sm cursor-pointer hover:bg-orange-100";
+        dayCell.textContent = day;
 
-        if (employees && employees.length > 0) {
-            // CREATE/UPDATE
-            await setDoc(scheduleRef, {
-                date: dateKey,
-                employees: employees,
-                lastUpdated: new Date()
+        const employeeList = scheduleData[dateKey] || [];
+        if (employeeList.length > 0) {
+            const list = document.createElement("ul");
+            list.className = "text-xs text-gray-700 mt-1";
+            employeeList.forEach(name => {
+                const li = document.createElement("li");
+                li.textContent = `• ${name}`;
+                list.appendChild(li);
             });
-        } else {
-            // DELETE - Remove documento se não há funcionários
-            await deleteDoc(scheduleRef);
+            dayCell.appendChild(list);
         }
-    } catch (error) {
-        console.error('Erro ao salvar escala:', error);
-        alert('Erro ao salvar dados. Tente novamente.');
+
+        dayCell.addEventListener("click", () => openModal(dateKey));
+        calendarElement.appendChild(dayCell);
     }
-}
-
-function showLoading(show) {
-    const indicator = document.getElementById('loadingIndicator');
-    if (show) {
-        indicator.textContent = 'Carregando...';
-        indicator.style.color = '#4facfe';
-    } else {
-        indicator.textContent = 'Conectado';
-        indicator.style.color = '#28a745';
-    }
-}
-
-// ========================================
-// FUNÇÕES DO CALENDÁRIO
-// ========================================
-
-function initCalendar() {
-    updateCalendar();
-    updateMonthDisplay();
-    loadSchedulesFromFirestore();
-}
-
-function updateMonthDisplay() {
-    const monthYear = `${months[currentDate.getMonth()]} ${currentDate.getFullYear()}`;
-    document.getElementById('currentMonthYear').textContent = monthYear;
-
-    const today = new Date();
-    const isCurrentMonth = currentDate.getMonth() === today.getMonth() &&
-        currentDate.getFullYear() === today.getFullYear();
-
-    const indicator = document.getElementById('monthIndicator');
-    indicator.textContent = isCurrentMonth ? 'Mês Atual' : '';
-    indicator.style.display = isCurrentMonth ? 'block' : 'none';
-}
-
-function previousMonth() {
-    currentDate.setMonth(currentDate.getMonth() - 1);
-    updateCalendar();
-    updateMonthDisplay();
-}
-
-function nextMonth() {
-    currentDate.setMonth(currentDate.getMonth() + 1);
-    updateCalendar();
-    updateMonthDisplay();
 }
 
 function updateCalendar() {
-    const year = currentDate.getFullYear();
-    const month = currentDate.getMonth();
-    const today = new Date();
-
-    const firstDay = new Date(year, month, 1);
-    const lastDay = new Date(year, month + 1, 0);
-    const startDate = new Date(firstDay);
-    startDate.setDate(startDate.getDate() - firstDay.getDay());
-
-    const calendarBody = document.getElementById('calendarBody');
-    calendarBody.innerHTML = '';
-
-    let currentWeek = startDate;
-
-    for (let week = 0; week < 6; week++) {
-        const row = document.createElement('tr');
-
-        for (let day = 0; day < 7; day++) {
-            const cellDate = new Date(currentWeek);
-            const cell = document.createElement('td');
-
-            const dayNumber = document.createElement('div');
-            dayNumber.className = 'day-number';
-            dayNumber.textContent = cellDate.getDate();
-            cell.appendChild(dayNumber);
-
-            const dateKey = formatDateKey(cellDate);
-
-            // Adicionar classes CSS
-            if (cellDate.getMonth() !== month) {
-                cell.classList.add('other-month');
-            }
-
-            if (cellDate.toDateString() === today.toDateString()) {
-                cell.classList.add('today');
-            }
-
-            if (schedules[dateKey] && schedules[dateKey].length > 0) {
-                cell.classList.add('has-employees');
-                const employeeList = document.createElement('div');
-                employeeList.className = 'employee-list';
-
-                schedules[dateKey].forEach(employee => {
-                    const tag = document.createElement('span');
-                    tag.className = 'employee-tag';
-                    tag.textContent = employee;
-                    employeeList.appendChild(tag);
-                });
-
-                cell.appendChild(employeeList);
-            }
-
-            cell.addEventListener('click', () => openEditModal(dateKey, cellDate));
-
-            row.appendChild(cell);
-            currentWeek.setDate(currentWeek.getDate() + 1);
-        }
-
-        calendarBody.appendChild(row);
-
-        if (currentWeek.getMonth() > month) break;
-    }
+    renderCalendar(currentMonth, currentYear);
 }
 
-// ========================================
-// FUNÇÕES DE UTILITÁRIOS
-// ========================================
-
+// --- Date Formatting ---
 function formatDateKey(date) {
-    return `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-${String(date.getDate()).padStart(2, '0')}`;
+    return date.toISOString().split("T")[0];
 }
 
 function formatDateDisplay(date) {
-    return `${String(date.getDate()).padStart(2, '0')}/${String(date.getMonth() + 1).padStart(2, '0')}/${date.getFullYear()}`;
+    return date.toLocaleDateString("en-US", { weekday: 'short', month: 'short', day: 'numeric' });
 }
 
-// ========================================
-// FUNÇÕES DO MODAL
-// ========================================
+// --- Modal Logic ---
+const modal = document.getElementById("employeeModal");
+const modalDate = document.getElementById("modalDate");
+const employeeListEl = document.getElementById("employeeList");
+const employeeInput = document.getElementById("employeeInput");
+let selectedDateKey = null;
 
-function openEditModal(dateKey, date) {
-    editingDate = dateKey;
-    const modal = document.getElementById('editModal');
-    const modalTitle = document.getElementById('modalTitle');
-    const currentEmployees = document.getElementById('currentEmployees');
+function openModal(dateKey) {
+    selectedDateKey = dateKey;
+    modalDate.textContent = `Shifts for ${formatDateDisplay(new Date(dateKey))}`;
+    employeeListEl.innerHTML = "";
 
-    modalTitle.textContent = `Escala - ${formatDateDisplay(date)}`;
+    const employees = scheduleData[dateKey] || [];
+    employees.forEach((name, index) => {
+        const li = document.createElement("li");
+        li.textContent = name;
+        li.className = "flex justify-between items-center";
 
-    // Limpar conteúdo anterior
-    currentEmployees.innerHTML = '';
-    document.getElementById('newEmployeeName').value = '';
+        const removeBtn = document.createElement("button");
+        removeBtn.textContent = "×";
+        removeBtn.className = "text-red-500 font-bold ml-2";
+        removeBtn.onclick = () => removeEmployeeFromDay(index);
 
-    // Mostrar funcionários atuais
-    if (schedules[dateKey] && schedules[dateKey].length > 0) {
-        const title = document.createElement('h4');
-        title.textContent = 'Funcionários Escalados:';
-        title.style.marginTop = '20px';
-        title.style.marginBottom = '10px';
-        currentEmployees.appendChild(title);
+        li.appendChild(removeBtn);
+        employeeListEl.appendChild(li);
+    });
 
-        schedules[dateKey].forEach((employee, index) => {
-            const item = document.createElement('div');
-            item.className = 'employee-item';
-
-            const name = document.createElement('span');
-            name.textContent = employee;
-
-            const removeBtn = document.createElement('button');
-            removeBtn.className = 'remove-btn';
-            removeBtn.textContent = 'Remover';
-            removeBtn.onclick = async () => {
-                await removeEmployeeFromDay(index);
-                openEditModal(editingDate, new Date(editingDate));
-            };
-
-            item.appendChild(name);
-            item.appendChild(removeBtn);
-            currentEmployees.appendChild(item);
-        });
-    } else {
-        const noEmployees = document.createElement('p');
-        noEmployees.textContent = 'Nenhum funcionário escalado para este dia.';
-        noEmployees.style.marginTop = '20px';
-        noEmployees.style.color = '#666';
-        currentEmployees.appendChild(noEmployees);
-    }
-
-    modal.style.display = 'block';
+    modal.classList.remove("hidden");
 }
 
 function closeModal() {
-    document.getElementById('editModal').style.display = 'none';
-    editingDate = null;
+    modal.classList.add("hidden");
+    employeeInput.value = "";
 }
 
-// ========================================
-// FUNÇÕES DE GERENCIAMENTO DE FUNCIONÁRIOS (CRUD)
-// ========================================
+function addEmployeeToDay() {
+    const name = employeeInput.value.trim();
+    if (!name) return;
 
-// CREATE - Adicionar funcionário no modal
-async function addEmployeeToDay() {
-    const employeeName = document.getElementById('newEmployeeName').value.trim();
-
-    if (!employeeName) {
-        alert('Por favor, digite o nome do funcionário.');
-        return;
+    if (!scheduleData[selectedDateKey]) {
+        scheduleData[selectedDateKey] = [];
     }
-
-    if (!schedules[editingDate]) {
-        schedules[editingDate] = [];
-    }
-
-    if (schedules[editingDate].includes(employeeName)) {
-        alert('Este funcionário já está escalado para este dia.');
-        return;
-    }
-
-    schedules[editingDate].push(employeeName);
-
-    // Salvar no Firestore
-    await saveScheduleToFirestore(editingDate, schedules[editingDate]);
-
-    document.getElementById('newEmployeeName').value = '';
+    scheduleData[selectedDateKey].push(name);
+    saveScheduleToFirestore(selectedDateKey);
+    openModal(selectedDateKey); // Refresh modal
 }
 
-// DELETE - Remover funcionário específico
-async function removeEmployeeFromDay(index) {
-    if (schedules[editingDate]) {
-        schedules[editingDate].splice(index, 1);
-
-        const employees = schedules[editingDate].length > 0 ? schedules[editingDate] : null;
-
-        if (!employees) {
-            delete schedules[editingDate];
-        }
-
-        // Salvar no Firestore (ou deletar se vazio)
-        await saveScheduleToFirestore(editingDate, employees);
+function removeEmployeeFromDay(index) {
+    if (scheduleData[selectedDateKey]) {
+        scheduleData[selectedDateKey].splice(index, 1);
+        saveScheduleToFirestore(selectedDateKey);
+        openModal(selectedDateKey); // Refresh modal
     }
 }
 
-// CREATE - Adicionar funcionário via formulário lateral
-async function addEmployee() {
-    const employeeName = document.getElementById('employeeName').value.trim();
-    const selectedDate = document.getElementById('selectedDate').value;
+document.getElementById("closeModal").onclick = closeModal;
+document.getElementById("addEmployee").onclick = addEmployeeToDay;
 
-    if (!employeeName) {
-        alert('Por favor, digite o nome do funcionário.');
-        return;
-    }
-
-    if (!selectedDate) {
-        alert('Por favor, selecione uma data.');
-        return;
-    }
-
-    if (!schedules[selectedDate]) {
-        schedules[selectedDate] = [];
-    }
-
-    if (schedules[selectedDate].includes(employeeName)) {
-        alert('Este funcionário já está escalado para este dia.');
-        return;
-    }
-
-    schedules[selectedDate].push(employeeName);
-
-    // Salvar no Firestore
-    await saveScheduleToFirestore(selectedDate, schedules[selectedDate]);
-
-    // Limpar formulário
-    document.getElementById('employeeName').value = '';
-    document.getElementById('selectedDate').value = '';
-
-    alert('Funcionário adicionado com sucesso!');
+// --- Firestore Functions ---
+function saveScheduleToFirestore(dateKey) {
+    const ref = doc(schedulesCollection, dateKey);
+    const employees = scheduleData[dateKey] || [];
+    setDoc(ref, {
+        date: dateKey,
+        employees: employees,
+        lastUpdated: new Date()
+    }).catch(err => console.error("Error saving schedule:", err));
 }
 
-// ========================================
-// EVENT LISTENERS E INICIALIZAÇÃO
-// ========================================
-
-// Fechar modal ao clicar fora dele
-window.onclick = function (event) {
-    const modal = document.getElementById('editModal');
-    if (event.target === modal) {
-        closeModal();
-    }
+function loadSchedulesFromFirestore() {
+    onSnapshot(schedulesCollection, snapshot => {
+        snapshot.forEach(docSnap => {
+            const data = docSnap.data();
+            scheduleData[data.date] = data.employees || [];
+        });
+        updateCalendar();
+        renderUpcomingSchedules();
+    });
 }
 
-// Cleanup ao sair da página
-window.addEventListener('beforeunload', () => {
-    if (unsubscribe) {
-        unsubscribe();
+// --- Upcoming Schedules ---
+function renderUpcomingSchedules() {
+    const listEl = document.getElementById("upcomingSchedulesList");
+    listEl.innerHTML = "";
+
+    const today = new Date();
+    const upcoming = Object.keys(scheduleData)
+        .filter(dateKey => {
+            const [y, m, d] = dateKey.split("-").map(Number);
+            const dateObj = new Date(y, m - 1, d);
+            return dateObj >= today && scheduleData[dateKey].length > 0;
+        })
+        .sort()
+        .slice(0, 7);
+
+    if (upcoming.length === 0) {
+        const li = document.createElement("li");
+        li.textContent = "No upcoming shifts.";
+        listEl.appendChild(li);
+        return;
     }
-});
 
-// Tornar funções disponíveis globalmente para os event handlers do HTML
-window.previousMonth = previousMonth;
-window.nextMonth = nextMonth;
-window.addEmployee = addEmployee;
-window.addEmployeeToDay = addEmployeeToDay;
-window.closeModal = closeModal;
+    upcoming.forEach(dateKey => {
+        const li = document.createElement("li");
+        const names = scheduleData[dateKey].join(", ");
+        li.textContent = `${formatDateDisplay(new Date(dateKey))}: ${names}`;
+        listEl.appendChild(li);
+    });
+}
 
-// Inicializar o calendário quando a página carregar
-document.addEventListener('DOMContentLoaded', initCalendar);
+// --- Initialize ---
+renderCalendar();
+loadSchedulesFromFirestore();
