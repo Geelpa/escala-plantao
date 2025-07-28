@@ -4,36 +4,61 @@
 <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Shift Scheduler</title>
+    <title>Escala - Plantão</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
     <link rel="stylesheet" href="style.css">
 </head>
 
-<body class="bg-gray-100 text-gray-900">
-    <div class="container mx-auto p-4">
-        <h1 class="text-2xl font-bold mb-4">Calendário de escalas</h1>
-        <div id="calendar" class="grid grid-cols-7 gap-2 mb-8"></div>
+<body class="bg-gray-200 text-gray-900 m-auto">
+    <div class="container p-4">
+        <div class="m-auto bg-white rounded shadow p-4">
+            <!-- Cabeçalho com nome do mês -->
+            <div class="flex justify-between items-center mb-4">
+                <button id="prevMonth" class="text-orange-500 font-bold">
+                    < </button>
+                        <h2 id="monthLabel" class="text-lg font-bold"></h2>
+                        <button id="nextMonth" class="text-orange-500 font-bold"> > </button>
+            </div>
 
-        <!-- Upcoming Schedules -->
-        <div id="upcomingSchedulesContainer" class="bg-white p-4 rounded shadow">
-            <h2 class="text-xl font-semibold mb-2">Próximas escalas</h2>
-            <ul id="upcomingSchedulesList" class="list-disc pl-5 text-sm text-gray-700"></ul>
+            <!-- Dias da semana -->
+            <div class="grid grid-cols-7 text-center font-semibold text-sm text-gray-500 mb-2">
+                <div>Dom</div>
+                <div>Seg</div>
+                <div>Ter</div>
+                <div>Qua</div>
+                <div>Qui</div>
+                <div>Sex</div>
+                <div>Sáb</div>
+            </div>
+
+            <!-- Grade dos dias -->
+            <div id="calendarDays" class="grid grid-cols-7 text-center gap-y-1"></div>
         </div>
-    </div>
-
-    <!-- Modal -->
-    <div id="employeeModal" class="fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center">
-        <div class="bg-white p-4 rounded w-80">
-            <h3 id="modalDate" class="text-lg font-bold mb-2"></h3>
-            <ul id="employeeList" class="mb-4 text-sm text-gray-700"></ul>
-            <input type="text" id="employeeInput" class="border w-full p-2 mb-2" placeholder="Add employee name" />
-            <div class="flex justify-end gap-2">
-                <button id="closeModal" class="bg-gray-300 px-4 py-2 rounded">Close</button>
-                <button id="addEmployee" class="bg-orange-500 text-white px-4 py-2 rounded">Add</button>
+        <!-- Modal -->
+        <div id="employeeModal" class="flex fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center">
+            <div class="bg-white p-4 rounded w-80">
+                <h3 id="modalDate" class="text-lg font-bold mb-2"></h3>
+                <ul id="employeeList" class="mb-4 text-sm text-gray-700"></ul>
+                <input type="text" id="employeeInput" class="border w-full p-2 mb-2" placeholder="Add employee name" />
+                <div class="flex justify-end gap-2">
+                    <button id="closeModal" class="bg-gray-300 px-4 py-2 rounded">Fechar</button>
+                    <button id="addEmployee" class="bg-orange-500 text-white px-4 py-2 rounded">Atribuir</button>
+                </div>
             </div>
         </div>
+
+
     </div>
+
+    <!-- Upcoming Schedules -->
+
+    <div id="upcomingSchedulesContainer" class="bg-white p-4 rounded shadow my-8">
+        <h2 class="text-xl font-semibold mb-2">Próximas escalas</h2>
+        <ul id="upcomingSchedulesList" class="list-disc pl-5 text-sm text-gray-700"></ul>
+    </div>
+
+
 
     <script type="module" src="app.js"></script>
 </body>

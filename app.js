@@ -11,48 +11,85 @@ import {
 
 const schedulesCollection = collection(db, "schedules");
 const scheduleData = {};
-const calendarElement = document.getElementById("calendar");
+// const calendarElement = document.getElementById("calendar");
 
-let currentMonth = new Date().getMonth();
-let currentYear = new Date().getFullYear();
+const monthLabel = document.getElementById("monthLabel");
+const calendarDays = document.getElementById("calendarDays");
+const prevMonthBtn = document.getElementById("prevMonth");
+const nextMonthBtn = document.getElementById("nextMonth");
 
-// --- Calendar Functions ---
-function renderCalendar(month = currentMonth, year = currentYear) {
-    calendarElement.innerHTML = "";
-    const firstDay = new Date(year, month, 1).getDay();
-    const daysInMonth = new Date(year, month + 1, 0).getDate();
+const monthNames = [
+    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
+    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
+];
 
-    for (let i = 0; i < firstDay; i++) {
-        const emptyCell = document.createElement("div");
-        calendarElement.appendChild(emptyCell);
+let currentDate = new Date();
+
+function renderCalendar(date = new Date()) {
+    const year = date.getFullYear();
+    const month = date.getMonth();
+
+    monthLabel.textContent = `${monthNames[month]} ${year}`;
+    calendarDays.innerHTML = "";
+
+    const firstDayOfWeek = new Date(year, month, 1).getDay();
+    const daysInCurrentMonth = new Date(year, month + 1, 0).getDate();
+    const daysInPrevMonth = new Date(year, month, 0).getDate();
+
+    const totalCells = 35; // 6 semanas completas
+    const days = [];
+
+    // Dias do mês anterior
+    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
+        days.push({
+            day: daysInPrevMonth - i,
+            class: "text-gray-400" // estilo mais claro
+        });
     }
 
-    for (let day = 1; day <= daysInMonth; day++) {
-        const dateKey = formatDateKey(new Date(year, month, day));
-        const dayCell = document.createElement("div");
-        dayCell.className = "bg-white p-2 border rounded text-sm cursor-pointer hover:bg-orange-100";
-        dayCell.textContent = day;
-
-        const employeeList = scheduleData[dateKey] || [];
-        if (employeeList.length > 0) {
-            const list = document.createElement("ul");
-            list.className = "text-xs text-gray-700 mt-1";
-            employeeList.forEach(name => {
-                const li = document.createElement("li");
-                li.textContent = `• ${name}`;
-                list.appendChild(li);
-            });
-            dayCell.appendChild(list);
-        }
-
-        dayCell.addEventListener("click", () => openModal(dateKey));
-        calendarElement.appendChild(dayCell);
+    // Dias do mês atual
+    for (let i = 1; i <= daysInCurrentMonth; i++) {
+        days.push({
+            day: i,
+            class: "text-black font-semibold"
+        });
     }
+
+    // Dias do mês seguinte
+    while (days.length < totalCells) {
+        days.push({
+            day: days.length - (firstDayOfWeek + daysInCurrentMonth) + 1,
+            class: "text-gray-400"
+        });
+    }
+
+    // Renderizar os dias
+    days.forEach(({ day, class: className }, index) => {
+        const cell = document.createElement("div");
+        cell.textContent = day;
+        cell.className = `p-2 rounded-lg hover:bg-orange-200 cursor-pointer ${className}`;
+
+        const dateKey = formatDateKey(new Date(currentDate.getFullYear(), currentDate.getMonth(), day));
+
+        cell.addEventListener("click", () => openModal(dateKey));
+
+        calendarDays.appendChild(cell);
+    });
 }
 
-function updateCalendar() {
-    renderCalendar(currentMonth, currentYear);
-}
+// Navegar entre meses
+prevMonthBtn.addEventListener("click", () => {
+    currentDate.setMonth(currentDate.getMonth() - 1);
+    renderCalendar(currentDate);
+});
+
+nextMonthBtn.addEventListener("click", () => {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    renderCalendar(currentDate);
+});
+
+// Inicializar
+renderCalendar(currentDate);
 
 // --- Date Formatting ---
 function formatDateKey(date) {
@@ -138,7 +175,7 @@ function loadSchedulesFromFirestore() {
             const data = docSnap.data();
             scheduleData[data.date] = data.employees || [];
         });
-        updateCalendar();
+        // updateCalendar();
         renderUpcomingSchedules();
     });
 }
