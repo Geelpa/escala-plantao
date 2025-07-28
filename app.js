@@ -1,8 +1,4 @@
-// js/app.js
-// Sistema de Escalas - Aplicação Principal
-
-// Importar Firebase via CDN
-import { db } from './firebase-config';
+import { db } from './firebase-config.js';
 import {
     collection,
     doc,
