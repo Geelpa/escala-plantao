@@ -22,7 +22,7 @@ const monthNames = [
 
 let currentDate = new Date();
 
-function renderCalendar(date = new Date()) {
+function renderCalendar(date = new Date(dateKey + "T00:00:00")) {
     const year = date.getFullYear();
     const month = date.getMonth();
 
@@ -117,7 +117,7 @@ let selectedDateKey = null;
 
 function openModal(dateKey) {
     selectedDateKey = dateKey;
-    modalDate.textContent = `Escala para ${formatDateDisplay(new Date(dateKey))}`;
+    modalDate.textContent = `Escala para ${formatDateDisplay(new Date(dateKey + 'T00:00:00'))}`;
     employeeListEl.innerHTML = "";
 
     const employees = scheduleData[dateKey] || [];
@@ -173,7 +173,7 @@ function saveScheduleToFirestore(dateKey) {
     setDoc(ref, {
         date: dateKey,
         employees: employees,
-        lastUpdated: new Date()
+        lastUpdated: new Date(dateKey + "T00:00:00")
     }).catch(err => console.error("Erro ao salvar escala:", err));
 }
 
@@ -193,14 +193,14 @@ function renderUpcomingSchedules() {
     listEl.innerHTML = "";
 
     const today = new Date();
+
     const upcoming = Object.keys(scheduleData)
         .filter(dateKey => {
-            const [y, m, d] = dateKey.split("-").map(Number);
-            const dateObj = new Date(y, m - 1, d);
+            const dateObj = new Date(`${dateKey}T00:00:00`);
             return dateObj >= today && scheduleData[dateKey].length > 0;
         })
         .sort()
-        .slice(0, 7);
+        .slice(0, 7); // Limita às 7 próximas datas
 
     if (upcoming.length === 0) {
         const li = document.createElement("li");
@@ -212,7 +212,7 @@ function renderUpcomingSchedules() {
     upcoming.forEach(dateKey => {
         const li = document.createElement("li");
         const names = scheduleData[dateKey].join(", ");
-        li.textContent = `${formatDateDisplay(new Date(dateKey))}: ${names}`;
+        li.textContent = `${formatDateDisplay(new Date(`${dateKey}T00:00:00`))}: ${names}`;
         listEl.appendChild(li);
     });
 }
