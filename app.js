@@ -4,14 +4,11 @@ import {
     doc,
     setDoc,
     deleteDoc,
-    onSnapshot,
-    query,
-    orderBy
+    onSnapshot
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
 const schedulesCollection = collection(db, "schedules");
 const scheduleData = {};
-// const calendarElement = document.getElementById("calendar");
 
 const monthLabel = document.getElementById("monthLabel");
 const calendarDays = document.getElementById("calendarDays");
@@ -43,7 +40,9 @@ function renderCalendar(date = new Date()) {
     for (let i = firstDayOfWeek - 1; i >= 0; i--) {
         days.push({
             day: daysInPrevMonth - i,
-            class: "text-gray-400" // estilo mais claro
+            month: month === 0 ? 11 : month - 1,
+            year: month === 0 ? year - 1 : year,
+            class: "text-gray-400"
         });
     }
 
@@ -51,25 +50,30 @@ function renderCalendar(date = new Date()) {
     for (let i = 1; i <= daysInCurrentMonth; i++) {
         days.push({
             day: i,
+            month: month,
+            year: year,
             class: "text-black font-semibold"
         });
     }
 
     // Dias do mês seguinte
     while (days.length < totalCells) {
+        const nextDay = days.length - (firstDayOfWeek + daysInCurrentMonth) + 1;
         days.push({
-            day: days.length - (firstDayOfWeek + daysInCurrentMonth) + 1,
+            day: nextDay,
+            month: month === 11 ? 0 : month + 1,
+            year: month === 11 ? year + 1 : year,
             class: "text-gray-400"
         });
     }
 
     // Renderizar os dias
-    days.forEach(({ day, class: className }, index) => {
+    days.forEach(({ day, month, year, class: className }, index) => {
         const cell = document.createElement("div");
         cell.textContent = day;
         cell.className = `p-2 rounded-lg hover:bg-orange-200 cursor-pointer ${className}`;
 
-        const dateKey = formatDateKey(new Date(currentDate.getFullYear(), currentDate.getMonth(), day));
+        const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
         cell.addEventListener("click", () => openModal(dateKey));
 
@@ -88,16 +92,20 @@ nextMonthBtn.addEventListener("click", () => {
     renderCalendar(currentDate);
 });
 
-// Inicializar
-renderCalendar(currentDate);
-
-// --- Date Formatting ---
+// --- Format Helpers ---
 function formatDateKey(date) {
-    return date.toISOString().split("T")[0];
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, '0');
+    const day = String(date.getDate()).padStart(2, '0');
+    return `${year}-${month}-${day}`;
 }
 
 function formatDateDisplay(date) {
-    return date.toLocaleDateString("en-US", { weekday: 'short', month: 'short', day: 'numeric' });
+    return date.toLocaleDateString("pt-BR", {
+        day: '2-digit',
+        month: 'long',
+        year: 'numeric'
+    });
 }
 
 // --- Modal Logic ---
@@ -109,7 +117,7 @@ let selectedDateKey = null;
 
 function openModal(dateKey) {
     selectedDateKey = dateKey;
-    modalDate.textContent = `Shifts for ${formatDateDisplay(new Date(dateKey))}`;
+    modalDate.textContent = `Escala para ${formatDateDisplay(new Date(dateKey))}`;
     employeeListEl.innerHTML = "";
 
     const employees = scheduleData[dateKey] || [];
@@ -158,7 +166,7 @@ function removeEmployeeFromDay(index) {
 document.getElementById("closeModal").onclick = closeModal;
 document.getElementById("addEmployee").onclick = addEmployeeToDay;
 
-// --- Firestore Functions ---
+// --- Firestore ---
 function saveScheduleToFirestore(dateKey) {
     const ref = doc(schedulesCollection, dateKey);
     const employees = scheduleData[dateKey] || [];
@@ -166,7 +174,7 @@ function saveScheduleToFirestore(dateKey) {
         date: dateKey,
         employees: employees,
         lastUpdated: new Date()
-    }).catch(err => console.error("Error saving schedule:", err));
+    }).catch(err => console.error("Erro ao salvar escala:", err));
 }
 
 function loadSchedulesFromFirestore() {
@@ -175,12 +183,11 @@ function loadSchedulesFromFirestore() {
             const data = docSnap.data();
             scheduleData[data.date] = data.employees || [];
         });
-        // updateCalendar();
         renderUpcomingSchedules();
     });
 }
 
-// --- Upcoming Schedules ---
+// --- Próximas escalas ---
 function renderUpcomingSchedules() {
     const listEl = document.getElementById("upcomingSchedulesList");
     listEl.innerHTML = "";
@@ -197,7 +204,7 @@ function renderUpcomingSchedules() {
 
     if (upcoming.length === 0) {
         const li = document.createElement("li");
-        li.textContent = "No upcoming shifts.";
+        li.textContent = "Nenhum funcionário escalado.";
         listEl.appendChild(li);
         return;
     }
@@ -210,6 +217,6 @@ function renderUpcomingSchedules() {
     });
 }
 
-// --- Initialize ---
-renderCalendar();
+// Inicializar
+renderCalendar(currentDate);
 loadSchedulesFromFirestore();
