@@ -71,7 +71,7 @@ function renderCalendar(date = new Date(dateKey + "T00:00:00")) {
     days.forEach(({ day, month, year, class: className }, index) => {
         const cell = document.createElement("div");
         cell.textContent = day;
-        cell.className = `p-2 rounded-lg hover:bg-orange-200 cursor-pointer ${className}`;
+        cell.className = `p-2 rounded-lg hover:bg-orange-300 cursor-pointer ${className}`;
 
         const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
 
