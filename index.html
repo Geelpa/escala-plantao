@@ -5,19 +5,34 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Escala - Plantão</title>
+
+    <!-- TailwindCSS (somente para testes) -->
     <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdn.jsdelivr.net/npm/@tailwindcss/browser@4"></script>
+
+    <!-- Tooltip com Tailwind (opcional) -->
+    <style>
+        .tooltip {
+            @apply absolute bg-white border text-xs text-gray-800 rounded shadow p-2;
+            z-index: 10;
+            display: none;
+        }
+
+        .day-wrapper:hover .tooltip {
+            display: block;
+        }
+    </style>
 </head>
 
 <body class="bg-orange-400 text-gray-900 flex justify-center">
     <div class="container m-4 max-w-md">
-        <div class="bg-white rounded-md p-4">
-            <!-- Cabeçalho com nome do mês -->
+
+        <!-- CALENDÁRIO -->
+        <div class="bg-white rounded-md p-4 shadow">
+            <!-- Cabeçalho -->
             <div class="flex justify-between items-center mb-4">
-                <button id="prevMonth" class="text-orange-500 font-bold">
-                    < </button>
-                        <h2 id="monthLabel" class="text-lg font-bold"></h2>
-                        <button id="nextMonth" class="text-orange-500 font-bold"> > </button>
+                <button id="prevMonth" class="text-orange-500 font-bold">&lt;</button>
+                <h2 id="monthLabel" class="text-lg font-bold"></h2>
+                <button id="nextMonth" class="text-orange-500 font-bold">&gt;</button>
             </div>
 
             <!-- Dias da semana -->
@@ -31,31 +46,59 @@
                 <div>Sáb</div>
             </div>
 
-            <!-- Grade dos dias -->
+            <!-- Dias do mês -->
             <div id="calendarDays" class="grid grid-cols-7 text-center gap-y-1"></div>
         </div>
 
-        <!-- Upcoming Schedules -->
+        <!-- PRÓXIMAS ESCALAS -->
         <div id="upcomingSchedulesContainer" class="bg-white p-4 rounded-md shadow mt-4">
-            <h2 class="text-xl font-semibold mb-2">Próximas escalas</h2>
-            <ul id="upcomingSchedulesList" class="list-disc pl-5 text-sm text-gray-700"></ul>
+            <h2 class="text-xl font-semibold mb-2">Próximas Escalas</h2>
+            <ul id="upcomingSchedulesList" class="space-y-1 text-sm text-gray-800"></ul>
         </div>
 
-        <!-- Modal -->
-        <div id="employeeModal" class="flex fixed inset-0 bg-black bg-opacity-50 hidden justify-center items-center">
-            <div class="bg-white p-4 rounded w-80">
+        <!-- MODAL -->
+        <div id="employeeModal"
+            class="fixed inset-0 bg-black bg-opacity-50 hidden flex justify-center items-center z-50">
+            <div class="bg-white p-4 rounded w-80 shadow-md relative ">
+
                 <h3 id="modalDate" class="text-lg font-bold mb-2"></h3>
-                <ul id="employeeList" class="mb-4 text-sm text-gray-700"></ul>
-                <input type="text" id="employeeInput" class=" w-full p-2 mb-2"
+
+                <ul id="employeeList" class="mb-4 text-sm text-gray-700 space-y-1"></ul>
+
+                <input type="text" id="employeeInput" class="w-full p-2 mb-2 border rounded"
                     placeholder="Adicionar nome do funcionário..." />
+                <select id="selectFuncionario" class="w-full p-2 border rounded mb-2">
+                    <!-- será preenchido dinamicamente -->
+                </select>
                 <div class="flex justify-end gap-2">
                     <button id="closeModal" class="bg-gray-300 px-4 py-2 rounded">Fechar</button>
                     <button id="addEmployee" class="bg-orange-500 text-white px-4 py-2 rounded">Atribuir</button>
                 </div>
+
+                <!-- CADASTRAR FUNCIONÁRIO -->
+                <div id="employeeRegister" class="mt-4 border-t pt-4">
+                    <h4 class="text-md font-bold mb-2">Cadastrar Funcionário</h4>
+
+                    <input id="employeeNameInput" type="text" placeholder="Nome do funcionário"
+                        class="p-2 border rounded w-full mb-2" />
+
+                    <label class="block text-sm text-gray-600">Cor:</label>
+                    <input id="employeeColorInput" type="color" value="#60a5fa"
+                        class="w-12 h-8 p-0 border rounded mb-2 inline-block" />
+
+                    <button id="saveEmployeeBtn"
+                        class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 w-full">Salvar
+                        Funcionário</button>
+
+                    <div id="employeeFeedback" class="text-sm text-green-600 mt-2 hidden text-center font-medium">
+                        Funcionário cadastrado com sucesso!</div>
+                </div>
+
             </div>
         </div>
     </div>
 
+    <!-- JS -->
     <script type="module" src="app.js"></script>
 </body>
 

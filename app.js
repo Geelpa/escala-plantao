@@ -1,222 +1,173 @@
 import { db } from './firebase-config.js';
 import {
     collection,
+    addDoc,
     doc,
     setDoc,
-    deleteDoc,
+    getDocs,
+    getDoc,
     onSnapshot
 } from 'https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js';
 
-const schedulesCollection = collection(db, "schedules");
-const scheduleData = {};
+let currentDate = new Date();
+let listaFuncionarios = [];
 
 const monthLabel = document.getElementById("monthLabel");
 const calendarDays = document.getElementById("calendarDays");
-const prevMonthBtn = document.getElementById("prevMonth");
-const nextMonthBtn = document.getElementById("nextMonth");
-
-const monthNames = [
-    "Janeiro", "Fevereiro", "Março", "Abril", "Maio", "Junho",
-    "Julho", "Agosto", "Setembro", "Outubro", "Novembro", "Dezembro"
-];
-
-let currentDate = new Date();
-
-function renderCalendar(date = new Date(dateKey + "T00:00:00")) {
-    const year = date.getFullYear();
-    const month = date.getMonth();
-
-    monthLabel.textContent = `${monthNames[month]} ${year}`;
-    calendarDays.innerHTML = "";
-
-    const firstDayOfWeek = new Date(year, month, 1).getDay();
-    const daysInCurrentMonth = new Date(year, month + 1, 0).getDate();
-    const daysInPrevMonth = new Date(year, month, 0).getDate();
-
-    const totalCells = 35; // 6 semanas completas
-    const days = [];
-
-    // Dias do mês anterior
-    for (let i = firstDayOfWeek - 1; i >= 0; i--) {
-        days.push({
-            day: daysInPrevMonth - i,
-            month: month === 0 ? 11 : month - 1,
-            year: month === 0 ? year - 1 : year,
-            class: "text-gray-400"
-        });
-    }
-
-    // Dias do mês atual
-    for (let i = 1; i <= daysInCurrentMonth; i++) {
-        days.push({
-            day: i,
-            month: month,
-            year: year,
-            class: "text-black font-semibold"
-        });
-    }
-
-    // Dias do mês seguinte
-    while (days.length < totalCells) {
-        const nextDay = days.length - (firstDayOfWeek + daysInCurrentMonth) + 1;
-        days.push({
-            day: nextDay,
-            month: month === 11 ? 0 : month + 1,
-            year: month === 11 ? year + 1 : year,
-            class: "text-gray-400"
-        });
-    }
-
-    // Renderizar os dias
-    days.forEach(({ day, month, year, class: className }, index) => {
-        const cell = document.createElement("div");
-        cell.textContent = day;
-        cell.className = `p-2 rounded-lg hover:bg-orange-300 cursor-pointer ${className}`;
-
-        const dateKey = `${year}-${String(month + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
-
-        cell.addEventListener("click", () => openModal(dateKey));
-
-        calendarDays.appendChild(cell);
-    });
-}
-
-// Navegar entre meses
-prevMonthBtn.addEventListener("click", () => {
-    currentDate.setMonth(currentDate.getMonth() - 1);
-    renderCalendar(currentDate);
-});
-
-nextMonthBtn.addEventListener("click", () => {
-    currentDate.setMonth(currentDate.getMonth() + 1);
-    renderCalendar(currentDate);
-});
-
-// --- Format Helpers ---
-function formatDateKey(date) {
-    const year = date.getFullYear();
-    const month = String(date.getMonth() + 1).padStart(2, '0');
-    const day = String(date.getDate()).padStart(2, '0');
-    return `${year}-${month}-${day}`;
-}
-
-function formatDateDisplay(date) {
-    return date.toLocaleDateString("pt-BR", {
-        day: '2-digit',
-        month: 'long',
-        year: 'numeric'
-    });
-}
-
-// --- Modal Logic ---
 const modal = document.getElementById("employeeModal");
 const modalDate = document.getElementById("modalDate");
-const employeeListEl = document.getElementById("employeeList");
+const employeeList = document.getElementById("employeeList");
 const employeeInput = document.getElementById("employeeInput");
-let selectedDateKey = null;
+const closeModal = document.getElementById("closeModal");
+const addEmployee = document.getElementById("addEmployee");
+const selectFuncionario = document.getElementById("selectFuncionario");
 
-function openModal(dateKey) {
-    selectedDateKey = dateKey;
-    modalDate.textContent = `Escala para ${formatDateDisplay(new Date(dateKey + 'T00:00:00'))}`;
-    employeeListEl.innerHTML = "";
+function renderCalendar() {
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const firstDay = new Date(year, month, 1);
+    const lastDay = new Date(year, month + 1, 0);
 
-    const employees = scheduleData[dateKey] || [];
-    employees.forEach((name, index) => {
-        const li = document.createElement("li");
-        li.textContent = name;
-        li.className = "flex justify-between items-center";
+    monthLabel.textContent = `${firstDay.toLocaleString("default", { month: "long" })} ${year}`;
+    calendarDays.innerHTML = "";
 
-        const removeBtn = document.createElement("button");
-        removeBtn.textContent = "×";
-        removeBtn.className = "text-red-500 font-bold ml-2";
-        removeBtn.onclick = () => removeEmployeeFromDay(index);
+    const diasAntes = firstDay.getDay();
+    const totalDias = lastDay.getDate();
+    const diasDepois = 6 - lastDay.getDay();
 
-        li.appendChild(removeBtn);
-        employeeListEl.appendChild(li);
-    });
+    for (let i = diasAntes; i > 0; i--) {
+        const prevDate = new Date(year, month, 1 - i);
+        const div = criarElementoDia(prevDate, true);
+        calendarDays.appendChild(div);
+    }
 
-    modal.classList.remove("hidden");
+    for (let i = 1; i <= totalDias; i++) {
+        const day = new Date(year, month, i);
+        const div = criarElementoDia(day, false);
+        calendarDays.appendChild(div);
+    }
+
+    for (let i = 1; i <= diasDepois; i++) {
+        const nextDate = new Date(year, month + 1, i);
+        const div = criarElementoDia(nextDate, true);
+        calendarDays.appendChild(div);
+    }
 }
 
-function closeModal() {
+function criarElementoDia(date, isOtherMonth) {
+    const div = document.createElement("div");
+    div.textContent = date.getDate();
+    div.className = `p-2 cursor-pointer rounded-full hover:bg-orange-200 text-sm ${isOtherMonth ? "text-gray-400" : "text-gray-900"}`;
+    div.addEventListener("click", () => abrirModal(date));
+    return div;
+}
+
+function abrirModal(dateObj) {
+    const date = dateObj.toISOString().split("T")[0];
+    modalDate.textContent = new Date(date).toLocaleDateString("pt-BR");
+    modal.setAttribute("data-date", date);
+    modal.classList.remove("hidden");
+    carregarFuncionarios();
+    carregarEscalaDoDia(date);
+    popularSelectFuncionarios();
+}
+
+function fecharModal() {
     modal.classList.add("hidden");
+    employeeList.innerHTML = "";
     employeeInput.value = "";
 }
 
-function addEmployeeToDay() {
-    const name = employeeInput.value.trim();
-    if (!name) return;
+closeModal.addEventListener("click", fecharModal);
 
-    if (!scheduleData[selectedDateKey]) {
-        scheduleData[selectedDateKey] = [];
+addEmployee.addEventListener("click", async () => {
+    const nomeFuncionario = selectFuncionario.value || employeeInput.value.trim();
+    if (!nomeFuncionario) return;
+    const data = modal.getAttribute("data-date");
+    if (!data) return;
+
+    const docRef = doc(db, "escalas", data);
+    const docSnap = await getDoc(docRef);
+
+    let escalados = [];
+    if (docSnap.exists()) {
+        escalados = docSnap.data().funcionarios || [];
     }
-    scheduleData[selectedDateKey].push(name);
-    saveScheduleToFirestore(selectedDateKey);
-    openModal(selectedDateKey); // Refresh modal
-}
 
-function removeEmployeeFromDay(index) {
-    if (scheduleData[selectedDateKey]) {
-        scheduleData[selectedDateKey].splice(index, 1);
-        saveScheduleToFirestore(selectedDateKey);
-        openModal(selectedDateKey); // Refresh modal
+    if (!escalados.includes(nomeFuncionario)) {
+        escalados.push(nomeFuncionario);
+        await setDoc(docRef, { funcionarios: escalados });
+        renderCalendar();
+        fecharModal();
     }
-}
+});
 
-document.getElementById("closeModal").onclick = closeModal;
-document.getElementById("addEmployee").onclick = addEmployeeToDay;
-
-// --- Firestore ---
-function saveScheduleToFirestore(dateKey) {
-    const ref = doc(schedulesCollection, dateKey);
-    const employees = scheduleData[dateKey] || [];
-    setDoc(ref, {
-        date: dateKey,
-        employees: employees,
-        lastUpdated: new Date(dateKey + "T00:00:00")
-    }).catch(err => console.error("Erro ao salvar escala:", err));
-}
-
-function loadSchedulesFromFirestore() {
-    onSnapshot(schedulesCollection, snapshot => {
-        snapshot.forEach(docSnap => {
-            const data = docSnap.data();
-            scheduleData[data.date] = data.employees || [];
+async function carregarEscalaDoDia(data) {
+    const docRef = doc(db, "escalas", data);
+    const docSnap = await getDoc(docRef);
+    employeeList.innerHTML = "";
+    if (docSnap.exists()) {
+        const funcionarios = docSnap.data().funcionarios || [];
+        funcionarios.forEach(nome => {
+            const li = document.createElement("li");
+            li.textContent = nome;
+            employeeList.appendChild(li);
         });
-        renderUpcomingSchedules();
-    });
-}
-
-// --- Próximas escalas ---
-function renderUpcomingSchedules() {
-    const listEl = document.getElementById("upcomingSchedulesList");
-    listEl.innerHTML = "";
-
-    const today = new Date();
-
-    const upcoming = Object.keys(scheduleData)
-        .filter(dateKey => {
-            const dateObj = new Date(`${dateKey}T00:00:00`);
-            return dateObj >= today && scheduleData[dateKey].length > 0;
-        })
-        .sort()
-        .slice(0, 7); // Limita às 7 próximas datas
-
-    if (upcoming.length === 0) {
-        const li = document.createElement("li");
-        li.textContent = "Nenhum funcionário escalado.";
-        listEl.appendChild(li);
-        return;
     }
+}
 
-    upcoming.forEach(dateKey => {
-        const li = document.createElement("li");
-        const names = scheduleData[dateKey].join(", ");
-        li.textContent = `${formatDateDisplay(new Date(`${dateKey}T00:00:00`))}: ${names}`;
-        listEl.appendChild(li);
+async function carregarFuncionarios() {
+    try {
+        const querySnapshot = await getDocs(collection(db, "funcionarios"));
+        listaFuncionarios = [];
+        querySnapshot.forEach((doc) => {
+            const funcionario = doc.data();
+            listaFuncionarios.push({ id: doc.id, ...funcionario });
+        });
+    } catch (error) {
+        console.error("Erro ao carregar funcionários:", error);
+    }
+}
+
+function popularSelectFuncionarios() {
+    const select = document.getElementById("selectFuncionario");
+    if (!select) return;
+    select.innerHTML = '<option value="">Selecione um funcionário</option>';
+    listaFuncionarios.forEach(func => {
+        const option = document.createElement("option");
+        option.value = func.nome;
+        option.textContent = func.nome;
+        select.appendChild(option);
     });
 }
 
-// Inicializar
-renderCalendar(currentDate);
-loadSchedulesFromFirestore();
+// Cadastrar funcionário
+const saveEmployeeBtn = document.getElementById("saveEmployeeBtn");
+saveEmployeeBtn.addEventListener("click", async () => {
+    const nome = document.getElementById("employeeNameInput").value.trim();
+    const cor = document.getElementById("employeeColorInput").value;
+    if (!nome) return;
+    try {
+        await addDoc(collection(db, "funcionarios"), { nome, cor });
+        document.getElementById("employeeFeedback").classList.remove("hidden");
+        carregarFuncionarios();
+    } catch (error) {
+        console.error("Erro ao salvar funcionário:", error);
+    }
+});
+
+// Navegação
+prevMonth.addEventListener("click", () => {
+    currentDate.setMonth(currentDate.getMonth() - 1);
+    renderCalendar();
+});
+
+nextMonth.addEventListener("click", () => {
+    currentDate.setMonth(currentDate.getMonth() + 1);
+    renderCalendar();
+});
+
+window.addEventListener("DOMContentLoaded", () => {
+    carregarFuncionarios();
+    renderCalendar();
+});
