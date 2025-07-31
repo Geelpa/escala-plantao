@@ -151,6 +151,10 @@ saveEmployeeBtn.addEventListener("click", async () => {
         await addDoc(collection(db, "funcionarios"), { nome, cor });
         document.getElementById("employeeFeedback").classList.remove("hidden");
         carregarFuncionarios();
+        carregarEscalaDoDia(date);
+        popularSelectFuncionarios();
+        nome.value = ""
+        fecharModal()
     } catch (error) {
         console.error("Erro ao salvar funcionário:", error);
     }
