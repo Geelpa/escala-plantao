@@ -1,5 +1,5 @@
 import { renderCalendar, mudarMes } from "./calendar.js";
-import { carregarFuncionarios } from "./employees.js";
+import { loadEmployees } from "./employees.js";
 import { loadUpcomingSchedules } from "./schedule.js";
 
 
@@ -10,7 +10,7 @@ prevMonth.addEventListener("click", () => mudarMes(-1));
 nextMonth.addEventListener("click", () => mudarMes(1));
 
 window.addEventListener("DOMContentLoaded", () => {
-    carregarFuncionarios();
+    loadEmployees();
     loadUpcomingSchedules();
     renderCalendar();
 });

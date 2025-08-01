@@ -5,9 +5,9 @@ import {
 
 let listaFuncionarios = [];
 
-async function carregarFuncionarios() {
+async function loadEmployees() {
     try {
-        const querySnapshot = await getDocs(collection(db, "funcionarios"));
+        const querySnapshot = await getDocs(collection(db, "employees"));
         listaFuncionarios = [];
         querySnapshot.forEach((doc) => {
             const funcionario = doc.data();
@@ -36,13 +36,13 @@ saveEmployeeBtn.addEventListener("click", async () => {
     const cor = document.getElementById("employeeColorInput").value;
     if (!nome) return;
     try {
-        await addDoc(collection(db, "funcionarios"), { nome, cor });
+        await addDoc(collection(db, "employees"), { nome, cor });
         document.getElementById("employeeFeedback").classList.remove("hidden");
-        carregarFuncionarios();
+        loadEmployees();
         document.getElementById("employeeNameInput").value = "";
     } catch (error) {
         console.error("Erro ao salvar funcionário:", error);
     }
 });
 
-export { carregarFuncionarios, popularSelectFuncionarios };
+export { loadEmployees, popularSelectFuncionarios };

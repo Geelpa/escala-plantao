@@ -1,10 +1,9 @@
-import { carregarFuncionarios, popularSelectFuncionarios } from "./employees.js";
+import { loadEmployees, popularSelectFuncionarios } from "./employees.js";
 import { loadUpcomingSchedules } from "./schedule.js";
 
 const modal = document.getElementById("employeeModal");
 const modalDate = document.getElementById("modalDate");
 const employeeList = document.getElementById("employeeList");
-const employeeInput = document.getElementById("employeeInput");
 const closeModal = document.getElementById("closeModal");
 
 function abrirModal(dateObj) {
@@ -12,7 +11,7 @@ function abrirModal(dateObj) {
     modalDate.textContent = new Date(date).toLocaleDateString("pt-BR");
     modal.setAttribute("data-date", date);
     modal.classList.remove("hidden");
-    carregarFuncionarios();
+    loadEmployees();
     loadUpcomingSchedules(date);
     popularSelectFuncionarios();
 }

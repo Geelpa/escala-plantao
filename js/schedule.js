@@ -9,7 +9,7 @@ const addEmployee = document.getElementById("addEmployee");
 const selectFuncionario = document.getElementById("selectFuncionario");
 const employeeInput = document.getElementById("employeeInput");
 const modal = document.getElementById("employeeModal");
-const employeeList = document.getElementById("employeeList");
+// const employeeList = document.getElementById("employeeList");
 
 addEmployee.addEventListener("click", async () => {
     const nomeFuncionario = selectFuncionario.value || employeeInput.value.trim();
@@ -17,7 +17,7 @@ addEmployee.addEventListener("click", async () => {
     const data = modal.getAttribute("data-date");
     if (!data) return;
 
-    const docRef = doc(db, "escalas", data);
+    const docRef = doc(db, "schedules", data);
     const docSnap = await getDoc(docRef);
 
     let escalados = [];
@@ -46,6 +46,7 @@ addEmployee.addEventListener("click", async () => {
 //         });
 //     }
 // }
+
 async function loadUpcomingSchedules() {
     const today = new Date();
     today.setHours(0, 0, 0, 0); // remove horas para comparação exata
@@ -84,6 +85,7 @@ async function loadUpcomingSchedules() {
             upcoming.slice(0, 5).forEach(schedule => {
                 const div = document.createElement("div");
                 const formattedDate = schedule.date.toLocaleDateString("pt-BR");
+                console.log("Escala carregada:", schedule.date, schedule.users);
                 const userList = schedule.users
                     .map(user => `<span style="color: ${user.color}">${user.name}</span>`)
                     .join(", ");
