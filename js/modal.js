@@ -1,5 +1,5 @@
 import { carregarFuncionarios, popularSelectFuncionarios } from "./employees.js";
-import { carregarEscalaDoDia } from "./schedule.js";
+import { loadUpcomingSchedules } from "./schedule.js";
 
 const modal = document.getElementById("employeeModal");
 const modalDate = document.getElementById("modalDate");
@@ -13,14 +13,13 @@ function abrirModal(dateObj) {
     modal.setAttribute("data-date", date);
     modal.classList.remove("hidden");
     carregarFuncionarios();
-    carregarEscalaDoDia(date);
+    loadUpcomingSchedules(date);
     popularSelectFuncionarios();
 }
 
 function fecharModal() {
     modal.classList.add("hidden");
     employeeList.innerHTML = "";
-    employeeInput.value = "";
 }
 
 closeModal.addEventListener("click", fecharModal);
