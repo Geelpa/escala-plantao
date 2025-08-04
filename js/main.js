@@ -9,8 +9,10 @@ const nextMonth = document.getElementById("nextMonth");
 prevMonth.addEventListener("click", () => mudarMes(-1));
 nextMonth.addEventListener("click", () => mudarMes(1));
 
-window.addEventListener("DOMContentLoaded", () => {
-    loadEmployees();
-    loadUpcomingSchedules();
-    renderCalendar();
-});
+// window.addEventListener("DOMContentLoaded", () => {
+
+// });
+
+loadEmployees();
+loadUpcomingSchedules();
+renderCalendar();

@@ -9,7 +9,6 @@ const addEmployee = document.getElementById("addEmployee");
 const selectFuncionario = document.getElementById("selectFuncionario");
 const employeeInput = document.getElementById("employeeInput");
 const modal = document.getElementById("employeeModal");
-// const employeeList = document.getElementById("employeeList");
 
 addEmployee.addEventListener("click", async () => {
     const nomeFuncionario = selectFuncionario.value || employeeInput.value.trim();
@@ -33,24 +32,8 @@ addEmployee.addEventListener("click", async () => {
     }
 });
 
-// async function loadUpcomingSchedules(data) {
-//     const docRef = doc(db, "schedules", data);
-//     const docSnap = await getDoc(docRef);
-//     employeeList.innerHTML = "";
-//     if (docSnap.exists()) {
-//         const funcionarios = docSnap.data().funcionarios || [];
-//         funcionarios.forEach(nome => {
-//             const li = document.createElement("li");
-//             li.textContent = nome;
-//             employeeList.appendChild(li);
-//         });
-//     }
-// }
-
 async function loadUpcomingSchedules() {
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // remove horas para comparação exata
-
     const container = document.getElementById("upcoming-schedules");
     container.innerHTML = "";
 
@@ -60,20 +43,22 @@ async function loadUpcomingSchedules() {
 
         snapshot.forEach(docSnap => {
             const docId = docSnap.id;
-            if (!docId) return;
+            if (!docId || typeof docId !== "string") return;
 
-            const [year, month, day] = docId.split("-");
-            const date = new Date(parseInt(year), parseInt(month) - 1, parseInt(day));
+            const date = new Date(docId + "T00:00:00");
             if (isNaN(date)) return;
-
-            date.setHours(0, 0, 0, 0); // normalize
 
             if (date >= today) {
                 const data = docSnap.data();
-                upcoming.push({
-                    date,
-                    users: data.users || [],
+                const rawUsers = data.users || data.funcionarios || [];
+                const users = rawUsers.map(user => {
+                    if (typeof user === "string") {
+                        return { name: user, color: "gray-600" };
+                    }
+                    return user;
                 });
+
+                upcoming.push({ date, users });
             }
         });
 
@@ -84,11 +69,18 @@ async function loadUpcomingSchedules() {
         } else {
             upcoming.slice(0, 5).forEach(schedule => {
                 const div = document.createElement("div");
-                const formattedDate = schedule.date.toLocaleDateString("pt-BR");
-                console.log("Escala carregada:", schedule.date, schedule.users);
-                const userList = schedule.users
-                    .map(user => `<span style="color: ${user.color}">${user.name}</span>`)
-                    .join(", ");
+                const formattedDate = schedule.date.toLocaleDateString("pt-BR", {
+                    day: "2-digit",
+                    month: "2-digit",
+                    year: "numeric"
+                });
+
+                const userList = schedule.users.map(user => {
+                    const name = user.name || "Funcionário";
+                    const color = user.color || "gray-600";
+                    return `<span class="font-medium">${name}</span>`;
+                }).join(", ");
+
                 div.innerHTML = `<p><strong>${formattedDate}</strong>: ${userList}</p>`;
                 container.appendChild(div);
             });
@@ -98,5 +90,4 @@ async function loadUpcomingSchedules() {
         container.innerHTML = '<p class="text-sm text-red-500">Erro ao carregar escalas.</p>';
     }
 }
-
 export { loadUpcomingSchedules };
