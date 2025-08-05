@@ -53,7 +53,7 @@ function criarElementoDia(date, isOtherMonth, scales) {
         funcionarios.forEach(func => {
             const badge = document.createElement("div");
             badge.textContent = func.name.charAt(0);
-            badge.className = "w-5 h-5 rounded-full text-white text-xs nowrap items-center justify-center";
+            badge.className = "w-5 h-5 rounded-full text-white text-xs flex items-center justify-center";
             badge.style.backgroundColor = func.color;
             container.appendChild(badge);
         });
