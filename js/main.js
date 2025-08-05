@@ -1,6 +1,6 @@
 import { renderCalendar, mudarMes } from "./calendar.js";
 import { loadEmployees } from "./employees.js";
-import { loadUpcomingSchedules } from "./schedule.js";
+import { loadUpcomingSchedulesDay } from "./schedule.js";
 import { db } from "./firebase-config.js";
 import {
     getDocs, collection, onSnapshot
@@ -29,5 +29,5 @@ export function escutarEscalasTempoReal() {
 }
 
 loadEmployees();
-loadUpcomingSchedules();
+loadUpcomingSchedulesDay();
 escutarEscalasTempoReal();

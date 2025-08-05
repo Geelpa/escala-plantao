@@ -1,6 +1,4 @@
 import { db } from "./firebase-config.js";
-import { renderCalendar } from "./calendar.js";
-import { fecharModal } from "./modal.js";
 import {
     doc, getDoc, setDoc, getDocs, collection
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
@@ -45,7 +43,7 @@ addEmployee.addEventListener("click", async () => {
     }
 });
 
-async function loadUpcomingSchedules() {
+async function loadUpcomingSchedulesDay() {
     const today = new Date();
     const container = document.getElementById("upcoming-schedules");
     container.innerHTML = "";
@@ -103,4 +101,4 @@ async function loadUpcomingSchedules() {
         container.innerHTML = '<p class="text-sm text-red-500">Erro ao carregar escalas.</p>';
     }
 }
-export { loadUpcomingSchedules };
+export { loadUpcomingSchedulesDay };
