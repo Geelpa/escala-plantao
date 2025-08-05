@@ -4,9 +4,8 @@ import { loadUpcomingSchedulesDay } from "./schedule.js";
 import {
     collection, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js";
 import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
-import { db, app, firebaseConfig } from "./firebase-config.js";
+import { db, app } from "./firebase-config.js";
 
 
 const auth = getAuth(app);
