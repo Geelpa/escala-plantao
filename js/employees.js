@@ -40,6 +40,9 @@ saveEmployeeBtn.addEventListener("click", async () => {
         document.getElementById("employeeFeedback").classList.remove("hidden");
         loadEmployees();
         document.getElementById("employeeNameInput").value = "";
+
+        escutarEscalasTempoReal();
+
     } catch (error) {
         console.error("Erro ao salvar funcionário:", error);
     }

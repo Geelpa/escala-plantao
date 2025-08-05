@@ -1,5 +1,6 @@
 import { loadEmployees, popularSelectFuncionarios } from "./employees.js";
-import { loadUpcomingSchedules } from "./schedule.js";
+import { } from "./calendar.js"
+// import { loadUpcomingSchedules } from "./schedule.js";
 
 const modal = document.getElementById("employeeModal");
 const modalDate = document.getElementById("modalDate");
@@ -12,7 +13,6 @@ function abrirModal(dateObj) {
     modal.setAttribute("data-date", date);
     modal.classList.remove("hidden");
     loadEmployees();
-    loadUpcomingSchedules(date);
     popularSelectFuncionarios();
 }
 

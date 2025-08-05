@@ -24,10 +24,23 @@ addEmployee.addEventListener("click", async () => {
         escalados = docSnap.data().funcionarios || [];
     }
 
-    if (!escalados.includes(nomeFuncionario)) {
-        escalados.push(nomeFuncionario);
+    // Verifica se já foi atribuído
+    if (!escalados.some(emp => emp.name === nomeFuncionario)) {
+        // Busca a cor do funcionário na coleção 'employees'
+        const snapshot = await getDocs(collection(db, "employees"));
+        let corFuncionario = "#9ca3af"; // cinza padrão
+
+        snapshot.forEach(doc => {
+            const data = doc.data();
+            if (data.nome === nomeFuncionario) {
+                corFuncionario = data.cor || corFuncionario;
+            }
+        });
+
+        // Salva como objeto com nome + cor
+        escalados.push({ name: nomeFuncionario, color: corFuncionario });
+
         await setDoc(docRef, { funcionarios: escalados });
-        renderCalendar();
         fecharModal();
     }
 });
