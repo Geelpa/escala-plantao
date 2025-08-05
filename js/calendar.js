@@ -48,7 +48,7 @@ function criarElementoDia(date, isOtherMonth, scales) {
 
     if (funcionarios && funcionarios.length > 0) {
         const container = document.createElement("div");
-        container.className = "flex justify-center gap-1 mt-1";
+        container.className = "flex justify-center gap-1";
 
         funcionarios.forEach(func => {
             const badge = document.createElement("div");
