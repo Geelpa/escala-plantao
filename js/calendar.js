@@ -1,3 +1,4 @@
+import { escutarEscalasTempoReal } from "./main.js";
 import { abrirModal } from "./modal.js";
 
 let currentDate = new Date();
@@ -67,6 +68,7 @@ function criarElementoDia(date, isOtherMonth, scales) {
 function mudarMes(offset) {
     currentDate.setMonth(currentDate.getMonth() + offset);
     renderCalendar();
+    escutarEscalasTempoReal();
 }
 
 export { renderCalendar, mudarMes, currentDate };

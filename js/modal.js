@@ -46,9 +46,18 @@ async function loadUpcomingSchedules(date) {
 }
 
 function abrirModal(dateObj) {
-    const date = dateObj.toISOString().split("T")[0];
-    modalDate.textContent = new Date(date).toLocaleDateString("pt-BR");
+    const yyyy = dateObj.getFullYear();
+    const mm = (dateObj.getMonth() + 1).toString().padStart(2, "0");
+    const dd = dateObj.getDate().toString().padStart(2, "0");
+    const date = `${yyyy}-${mm}-${dd}`; // formato para banco
+    const dateBr = `${dd}/${mm}/${yyyy}`; // formato para exibição
+
+    modalDate.textContent = dateBr;
     modal.setAttribute("data-date", date);
+
+
+    modal.setAttribute("data-date", date);
+
     modal.classList.remove("hidden");
     loadEmployees();
     popularSelectFuncionarios();
