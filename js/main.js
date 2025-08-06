@@ -30,9 +30,9 @@ onAuthStateChanged(auth, user => {
         iniciarAplicacao(); // visitante também pode ver calendário
 
         // Garantir que edição permanece oculta
+        document.getElementById("addEmployee")?.classList.add("hidden");
         document.getElementById("employeeRegister")?.classList.add("hidden");
         document.getElementById("selectFuncionario")?.classList.add("hidden");
-        document.getElementById("attributionButtons")?.classList.add("hidden");
     }
 });
 
