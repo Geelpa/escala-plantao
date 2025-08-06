@@ -12,7 +12,6 @@ const auth = getAuth(app);
 
 onAuthStateChanged(auth, user => {
     if (user) {
-        iniciarAplicacao(); // render calendar, etc.
 
         // Mostra botão "Sair"
         authButton.textContent = "Sair";
@@ -25,8 +24,6 @@ onAuthStateChanged(auth, user => {
         document.getElementById("attributionButtons")?.classList.remove("hidden");
         document.getElementById("addEmployee")?.classList.remove("hidden");
     } else {
-        iniciarAplicacao(); // visitante também pode ver calendário
-
         // Mostra botão "Entrar"
         authButton.textContent = "Entrar";
         authButton.onclick = () => {
@@ -68,3 +65,4 @@ export function escutarEscalasTempoReal() {
         renderCalendar(scales);
     });
 }
+iniciarAplicacao(); // render calendar, etc.

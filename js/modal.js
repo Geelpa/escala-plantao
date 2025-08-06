@@ -19,6 +19,11 @@ async function loadUpcomingSchedules(date) {
         const auth = getAuth();
 
         onAuthStateChanged(auth, (user) => {
+            if (!docSnap.exists()) {
+                const employeesOfTheDay = document.getElementById("employeesOfTheDay")
+                employeesOfTheDay.textContent = "Nenhum funcionário escalado"
+            }
+
             if (docSnap.exists()) {
                 const funcionarios = docSnap.data().funcionarios || [];
 
@@ -32,6 +37,8 @@ async function loadUpcomingSchedules(date) {
                     span.className = "truncate max-w-[140px]";
                     span.textContent = nome;
 
+                    employeesOfTheDay.textContent = "Funcionários escalados:"
+
                     li.appendChild(span);
 
                     if (user) {
@@ -44,10 +51,8 @@ async function loadUpcomingSchedules(date) {
                             await setDoc(docRef, { funcionarios: novosFuncionarios });
                             loadUpcomingSchedules(date);
                         });
-
                         li.appendChild(btn);
                     }
-
                     employeeList.appendChild(li);
                 });
             }
