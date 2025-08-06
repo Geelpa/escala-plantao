@@ -16,11 +16,11 @@ async function loadUpcomingSchedules(date) {
         const docRef = doc(db, "schedules", date);
         const docSnap = await getDoc(docRef);
 
+        const auth = getAuth();
+        const user = auth.currentUser; // Pode ser null
+
         if (docSnap.exists()) {
             const funcionarios = docSnap.data().funcionarios || [];
-
-            const auth = getAuth();
-            const user = auth.currentUser;
 
             funcionarios.forEach((func, index) => {
                 const li = document.createElement("li");
@@ -34,7 +34,7 @@ async function loadUpcomingSchedules(date) {
 
                 li.appendChild(span);
 
-                // Somente mostra o botão "Remover" se o usuário estiver logado
+                // Botão remover só para usuários autenticados
                 if (user) {
                     const btn = document.createElement("button");
                     btn.className = "bg-red-100 text-red-600 text-xs px-2 py-1 rounded hover:bg-red-200";
@@ -56,7 +56,6 @@ async function loadUpcomingSchedules(date) {
         console.error("Erro ao carregar funcionários da data:", error);
     }
 }
-
 
 function abrirModal(dateObj) {
     const yyyy = dateObj.getFullYear();

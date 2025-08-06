@@ -4,30 +4,33 @@ import { loadUpcomingSchedulesDay } from "./schedule.js";
 import {
     collection, onSnapshot
 } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { db, app } from "./firebase-config.js";
 
 
 const auth = getAuth(app);
 
-// onAuthStateChanged(auth, user => {
-//     if (!user) {
-//         window.location.href = "login.html";
-//     } else {
-//         iniciarAplicacao();
-//     }
-// });
-
 onAuthStateChanged(auth, user => {
     if (user) {
         iniciarAplicacao(); // render calendar, etc.
 
+        // Mostra botão "Sair"
+        authButton.textContent = "Sair";
+        authButton.onclick = async () => {
+            await signOut(auth);
+        };
         // Exibir seções de edição
         document.getElementById("employeeRegister")?.classList.remove("hidden");
         document.getElementById("selectFuncionario")?.classList.remove("hidden");
         document.getElementById("attributionButtons")?.classList.remove("hidden");
     } else {
         iniciarAplicacao(); // visitante também pode ver calendário
+
+        // Mostra botão "Entrar"
+        authButton.textContent = "Entrar";
+        authButton.onclick = () => {
+            window.location.href = "login.html";
+        };
 
         // Garantir que edição permanece oculta
         document.getElementById("addEmployee")?.classList.add("hidden");
