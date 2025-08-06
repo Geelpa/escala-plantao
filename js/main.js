@@ -10,13 +10,32 @@ import { db, app } from "./firebase-config.js";
 
 const auth = getAuth(app);
 
+// onAuthStateChanged(auth, user => {
+//     if (!user) {
+//         window.location.href = "login.html";
+//     } else {
+//         iniciarAplicacao();
+//     }
+// });
+
 onAuthStateChanged(auth, user => {
-    if (!user) {
-        window.location.href = "login.html";
+    if (user) {
+        iniciarAplicacao(); // render calendar, etc.
+
+        // Exibir seções de edição
+        document.getElementById("employeeRegister")?.classList.remove("hidden");
+        document.getElementById("selectFuncionario")?.classList.remove("hidden");
+        document.getElementById("attributionButtons")?.classList.remove("hidden");
     } else {
-        iniciarAplicacao();
+        iniciarAplicacao(); // visitante também pode ver calendário
+
+        // Garantir que edição permanece oculta
+        document.getElementById("employeeRegister")?.classList.add("hidden");
+        document.getElementById("selectFuncionario")?.classList.add("hidden");
+        document.getElementById("attributionButtons")?.classList.add("hidden");
     }
 });
+
 
 function iniciarAplicacao() {
     const prevMonth = document.getElementById("prevMonth");
