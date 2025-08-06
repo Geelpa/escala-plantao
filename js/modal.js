@@ -1,12 +1,11 @@
 import { loadEmployees, popularSelectFuncionarios } from "./employees.js";
+import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { db } from "./firebase-config.js";
 
 const modal = document.getElementById("employeeModal");
 const modalDate = document.getElementById("modalDate");
 const employeeList = document.getElementById("employeeList");
 const closeModal = document.getElementById("closeModal");
-
-import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { db } from "./firebase-config.js";
 
 async function loadUpcomingSchedules(date) {
     const employeeList = document.getElementById("employeeList");
@@ -49,13 +48,10 @@ function abrirModal(dateObj) {
     const yyyy = dateObj.getFullYear();
     const mm = (dateObj.getMonth() + 1).toString().padStart(2, "0");
     const dd = dateObj.getDate().toString().padStart(2, "0");
-    const date = `${yyyy} -${mm} -${dd} `; // formato para banco
-    const dateBr = `${dd} /${mm}/${yyyy} `; // formato para exibição
+    const date = `${yyyy}-${mm}-${dd}`; // formato para banco (correto!)
+    const dateBr = `${dd}/${mm}/${yyyy}`; // formato para exibição
 
     modalDate.textContent = dateBr;
-    modal.setAttribute("data-date", date);
-
-
     modal.setAttribute("data-date", date);
 
     modal.classList.remove("hidden");
@@ -68,7 +64,6 @@ function fecharModal() {
     modal.classList.add("hidden");
     employeeList.innerHTML = "";
 }
-
 
 closeModal.addEventListener("click", fecharModal);
 
