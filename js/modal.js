@@ -48,8 +48,8 @@ function abrirModal(dateObj) {
     const yyyy = dateObj.getFullYear();
     const mm = (dateObj.getMonth() + 1).toString().padStart(2, "0");
     const dd = dateObj.getDate().toString().padStart(2, "0");
-    const date = `${yyyy}-${mm}-${dd}`; // formato para banco (correto!)
-    const dateBr = `${dd}/${mm}/${yyyy}`; // formato para exibição
+    const date = `${yyyy}-${mm}-${dd}`;
+    const dateBr = `${dd}/${mm}/${yyyy}`;
 
     modalDate.textContent = dateBr;
     modal.setAttribute("data-date", date);
