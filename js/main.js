@@ -23,6 +23,7 @@ onAuthStateChanged(auth, user => {
         document.getElementById("employeeRegister")?.classList.remove("hidden");
         document.getElementById("selectFuncionario")?.classList.remove("hidden");
         document.getElementById("attributionButtons")?.classList.remove("hidden");
+        document.getElementById("addEmployee")?.classList.remove("hidden");
     } else {
         iniciarAplicacao(); // visitante também pode ver calendário
 

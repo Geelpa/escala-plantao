@@ -58,29 +58,25 @@
                 <!-- CADASTRAR FUNCIONÁRIO -->
                 <div id="employeeRegister" class="mt-4 border-t pt-4 hidden">
                     <h4 class="text-md font-bold mb-2">Cadastrar Funcionário</h4>
-
                     <input id="employeeNameInput" type="text" placeholder="Nome do funcionário"
                         class="p-2 border rounded w-full mb-2" />
-
                     <label class="block text-sm text-gray-600">Cor:</label>
                     <input id="employeeColorInput" type="color" value="#60a5fa"
                         class="w-full h-8 p-0 border rounded mb-2 inline-block" />
-
                     <button id="saveEmployeeBtn"
                         class="bg-orange-500 text-white px-4 py-2 rounded hover:bg-orange-600 w-full">Salvar
                         Funcionário</button>
-
-                    <ul id="employeeList" class="my-4 text-sm text-gray-700 space-y-1"></ul>
                     <select id="selectFuncionario" class="w-full p-2 border rounded mb-2">
                         <!-- será preenchido dinamicamente -->
-
                     </select>
+                </div>
+                <ul id="employeeList" class="my-4 text-sm text-gray-700 space-y-1 font-bold"></ul>
+                <div class="flex justify-end gap-2">
+                    <!-- Botão de fechar: sempre visível -->
+                    <button id="closeModal" class="bg-gray-300 px-4 py-2 rounded">Fechar</button>
 
-                    <div class="flex justify-end gap-2">
-                        <button id="closeModal" class="bg-gray-300 px-4 py-2 rounded">Fechar</button>
-                        <button id="addEmployee" class="bg-orange-500 text-white px-4 py-2 rounded hidden"
-                            id="addEmployee">Atribuir</button>
-                    </div>
+                    <!-- Botão de atribuir: visível apenas para admins -->
+                    <button id="addEmployee" class="bg-orange-500 text-white px-4 py-2 rounded hidden">Atribuir</button>
                 </div>
             </div>
         </div>

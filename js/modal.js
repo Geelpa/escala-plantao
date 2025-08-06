@@ -1,6 +1,6 @@
 import { loadEmployees, popularSelectFuncionarios } from "./employees.js";
 import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
-import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
+import { getAuth, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { db } from "./firebase-config.js";
 
 const modal = document.getElementById("employeeModal");
@@ -17,45 +17,46 @@ async function loadUpcomingSchedules(date) {
         const docSnap = await getDoc(docRef);
 
         const auth = getAuth();
-        const user = auth.currentUser; // Pode ser null
 
-        if (docSnap.exists()) {
-            const funcionarios = docSnap.data().funcionarios || [];
+        onAuthStateChanged(auth, (user) => {
+            if (docSnap.exists()) {
+                const funcionarios = docSnap.data().funcionarios || [];
 
-            funcionarios.forEach((func, index) => {
-                const li = document.createElement("li");
-                li.className = "flex justify-between items-center bg-gray-100 px-2 py-1 rounded";
+                funcionarios.forEach((func, index) => {
+                    const li = document.createElement("li");
+                    li.className = "flex justify-between items-center bg-gray-100 px-2 py-1 rounded";
 
-                const nome = typeof func === "string" ? func : func.name;
+                    const nome = typeof func === "string" ? func : func.name;
 
-                const span = document.createElement("span");
-                span.className = "truncate max-w-[140px]";
-                span.textContent = nome;
+                    const span = document.createElement("span");
+                    span.className = "truncate max-w-[140px]";
+                    span.textContent = nome;
 
-                li.appendChild(span);
+                    li.appendChild(span);
 
-                // Botão remover só para usuários autenticados
-                if (user) {
-                    const btn = document.createElement("button");
-                    btn.className = "bg-red-100 text-red-600 text-xs px-2 py-1 rounded hover:bg-red-200";
-                    btn.textContent = "🗑️";
+                    if (user) {
+                        const btn = document.createElement("button");
+                        btn.className = "bg-red-100 text-red-600 text-xs px-2 py-1 rounded hover:bg-red-200";
+                        btn.textContent = "🗑️";
 
-                    btn.addEventListener("click", async () => {
-                        const novosFuncionarios = funcionarios.filter((_, i) => i !== index);
-                        await setDoc(docRef, { funcionarios: novosFuncionarios });
-                        loadUpcomingSchedules(date);
-                    });
+                        btn.addEventListener("click", async () => {
+                            const novosFuncionarios = funcionarios.filter((_, i) => i !== index);
+                            await setDoc(docRef, { funcionarios: novosFuncionarios });
+                            loadUpcomingSchedules(date);
+                        });
 
-                    li.appendChild(btn);
-                }
+                        li.appendChild(btn);
+                    }
 
-                employeeList.appendChild(li);
-            });
-        }
+                    employeeList.appendChild(li);
+                });
+            }
+        });
     } catch (error) {
         console.error("Erro ao carregar funcionários da data:", error);
     }
 }
+
 
 function abrirModal(dateObj) {
     const yyyy = dateObj.getFullYear();
