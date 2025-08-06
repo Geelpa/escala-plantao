@@ -1,5 +1,6 @@
 import { loadEmployees, popularSelectFuncionarios } from "./employees.js";
 import { doc, getDoc, setDoc } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-firestore.js";
+import { getAuth } from "https://www.gstatic.com/firebasejs/10.12.2/firebase-auth.js";
 import { db } from "./firebase-config.js";
 
 const modal = document.getElementById("employeeModal");
@@ -18,23 +19,35 @@ async function loadUpcomingSchedules(date) {
         if (docSnap.exists()) {
             const funcionarios = docSnap.data().funcionarios || [];
 
+            const auth = getAuth();
+            const user = auth.currentUser;
+
             funcionarios.forEach((func, index) => {
                 const li = document.createElement("li");
                 li.className = "flex justify-between items-center bg-gray-100 px-2 py-1 rounded";
 
                 const nome = typeof func === "string" ? func : func.name;
 
-                li.innerHTML = `
-                    <span class="truncate max-w-[140px]">${nome}</span>
-                    <button class="bg-red-100 text-red-600 text-xs px-2 py-1 rounded hover:bg-red-200">🗑️</button>
-                `;
+                const span = document.createElement("span");
+                span.className = "truncate max-w-[140px]";
+                span.textContent = nome;
 
-                const btn = li.querySelector("button");
-                btn.addEventListener("click", async () => {
-                    const novosFuncionarios = funcionarios.filter((_, i) => i !== index);
-                    await setDoc(docRef, { funcionarios: novosFuncionarios });
-                    loadUpcomingSchedules(date);
-                });
+                li.appendChild(span);
+
+                // Somente mostra o botão "Remover" se o usuário estiver logado
+                if (user) {
+                    const btn = document.createElement("button");
+                    btn.className = "bg-red-100 text-red-600 text-xs px-2 py-1 rounded hover:bg-red-200";
+                    btn.textContent = "🗑️";
+
+                    btn.addEventListener("click", async () => {
+                        const novosFuncionarios = funcionarios.filter((_, i) => i !== index);
+                        await setDoc(docRef, { funcionarios: novosFuncionarios });
+                        loadUpcomingSchedules(date);
+                    });
+
+                    li.appendChild(btn);
+                }
 
                 employeeList.appendChild(li);
             });
@@ -43,6 +56,7 @@ async function loadUpcomingSchedules(date) {
         console.error("Erro ao carregar funcionários da data:", error);
     }
 }
+
 
 function abrirModal(dateObj) {
     const yyyy = dateObj.getFullYear();
