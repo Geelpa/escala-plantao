@@ -9,13 +9,14 @@
 </head>
 
 <body class="bg-orange-400 flex items-center justify-center min-h-screen">
-    <div class="bg-white p-6 rounded shadow max-w-sm w-full">
+    <form class="bg-white p-6 rounded shadow max-w-sm w-full" id="form">
         <h2 class="text-xl font-bold mb-4 text-center text-orange-600">Login de Administrador</h2>
         <input id="email" type="email" placeholder="Email" class="w-full p-2 border rounded mb-2" />
         <input id="password" type="password" placeholder="Senha" class="w-full p-2 border rounded mb-4" />
-        <button id="loginBtn" class="w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600">Entrar</button>
+        <button id="loginBtn" type="submit"
+            class="w-full bg-orange-500 text-white py-2 rounded hover:bg-orange-600">Entrar</button>
         <p id="loginError" class="text-red-500 text-sm mt-2 hidden text-center"></p>
-    </div>
+    </form>
     <script type="module" src="./js/login.js"></script>
 </body>
 
